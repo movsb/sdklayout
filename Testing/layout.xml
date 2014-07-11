@@ -1,0 +1,13 @@
+<Window>
+	<Font name="微软雅黑" size="12" default="true" />
+	<Font name="微软雅黑" size="24" />
+	<Vertical inset="5,5,5,5">
+		<Control id="1001" font="1"/>
+		<Horizontal height="40" inset="0,5,0,5">
+			<Control />
+			<Control id="1002" font="1" width="50"/>
+			<Control width="5"/>
+			<Control id="1003" width="50"/>
+		</Horizontal>
+	</Vertical>
+</Window>
