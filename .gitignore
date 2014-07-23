@@ -2,3 +2,8 @@
 /ipch/
 /output/
 SdkLayout.*sdf
+*.plg
+*.positions
+*.opt
+*.ncb
+*.aps
