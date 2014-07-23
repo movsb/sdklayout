@@ -3,7 +3,7 @@
 namespace SdkLayout
 {
 	CContainerUI::CContainerUI()
-		: m_bScrollProcess(false)
+		: m_bEnableUpdate(true)
 	{
 
 	}
@@ -11,6 +11,16 @@ namespace SdkLayout
 	CContainerUI::~CContainerUI()
 	{
 		RemoveAll();
+	}
+
+	void CContainerUI::DoInit()
+	{
+		CControlUI::DoInit();
+
+		for(int c=GetCount(), i=0; i < c; i++){
+			CControlUI* pControl = static_cast<CControlUI*>(m_items[i]);
+			pControl->DoInit();
+		}
 	}
 
 	int CContainerUI::GetCount() const
@@ -21,6 +31,7 @@ namespace SdkLayout
 	bool CContainerUI::Add(CControlUI* pControl)
 	{
 		if( pControl == NULL) return false;
+		pControl->SetParent(this);
 		return m_items.Add(pControl);   
 	}
 
@@ -46,9 +57,7 @@ namespace SdkLayout
 
 	void CContainerUI::SetPos(const CDuiRect& rc)
 	{
-		m_rcItem = rc;
-		if(m_rcItem.right < m_rcItem.left) m_rcItem.right  = m_rcItem.left;
-		if(m_rcItem.bottom< m_rcItem.top)  m_rcItem.bottom = m_rcItem.top;
+		CControlUI::SetPos(rc);
 
 		if( m_items.IsEmpty() ) return;
 
@@ -67,17 +76,22 @@ namespace SdkLayout
 
 	void CContainerUI::SetHWND(HWND hWnd, CPaintManagerUI* mgr)
 	{
+		m_pManager = mgr;
+
 		for(int c = GetCount(), i=0; i<c; ++i){
 			CControlUI* pControl = static_cast<CControlUI*>(m_items[i]);
 			
 			HWND hChild = NULL;
 			// 这里所谓的 "容器" 只是一个虚拟的窗口, 它本身并不具有窗口句柄
-			if(typeid(*pControl) == typeid(CControlUI)){
+			// VC6.0的RTTI在VS12中使用时无效, 不能用typeid来判断
+			if(_tcscmp(pControl->GetClass(), CControlUI::GetClassStatic()) == 0){
 				int id = pControl->GetID();
 				if(id == -1)
 					hChild = NULL;
-				else
-					hChild = GetDlgItem(hWnd, pControl->GetID());
+				else{
+					hChild = GetDlgItem(hWnd, id);
+					assert(hChild != NULL);
+				}
 			}
 			else{
 				hChild = hWnd;
@@ -105,17 +119,29 @@ namespace SdkLayout
 	void CContainerUI::SetVisible( bool bVisible /*= true*/, bool bDispalyed /*= true*/ )
 	{
 		m_bVisible = bVisible;
+		m_bDisplayed = bDispalyed;
+
+		m_bEnableUpdate = false;
+
 		for(int i=0; i<m_items.GetSize(); i++){
 			CControlUI* pControl = static_cast<CControlUI*>(m_items[i]);
-			pControl->SetVisible(bVisible,bVisible);
-			pControl->SetDisplayed(bDispalyed);
+			pControl->SetVisibleByParent(bVisible, bDispalyed);
 		}
+
+		m_bEnableUpdate = true;
+		NeedParentUpdate();
 	}
 
 	void CContainerUI::SetDisplayed( bool bDisplayed )
 	{
 		m_bDisplayed = bDisplayed;
-		::ShowWindow(GetHWND(),m_bDisplayed?SW_SHOW:SW_HIDE);
+		
+	}
+
+	void CContainerUI::SetVisibleByParent( bool bVisible, bool bDisplayed)
+	{
+		// CControl::SetVisibleByParent()会调用CContainerUI::SetVisible()
+		CControlUI::SetVisibleByParent(bVisible, bDisplayed);
 	}
 
 } // namespace SdkLayout

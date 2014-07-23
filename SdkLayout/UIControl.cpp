@@ -4,17 +4,19 @@ namespace SdkLayout {
 
 CControlUI::CControlUI() : 
 m_bVisible(true), 
+m_bVisibleByParent(true),
 m_bDisplayed(true),
-m_bSetPos(false),
 m_id(-1),
 m_name(0),
 m_font(-1),
-m_pManager(NULL)
+m_pManager(NULL),
+m_pParent(NULL)
 {
     m_cXY.cx = m_cXY.cy = 0;
     m_cxyFixed.cx = m_cxyFixed.cy = 0;
     m_cxyMin.cx = m_cxyMin.cy = 0;
     m_cxyMax.cx = m_cxyMax.cy = 9999;
+	m_szPostSize.cx = m_szPostSize.cy = 0;
 
     ::ZeroMemory(&m_rcItem, sizeof(RECT));
 	::ZeroMemory(&m_rcInset, sizeof(m_rcInset)); // class object
@@ -22,6 +24,25 @@ m_pManager(NULL)
 
 CControlUI::~CControlUI()
 {
+}
+
+void CControlUI::DoInit()
+{
+	assert(m_pManager != NULL);
+
+	SetFont(GetFont());
+	SetVisible(IsVisible(), IsDispalyed());
+}
+
+bool CControlUI::SetFocus()
+{
+	if(::IsWindow(GetHWND())){
+		::SetFocus(GetHWND());
+		return true;
+	}
+	else{
+		return false;
+	}
 }
 
 const CDuiRect& CControlUI::GetPos() const
@@ -38,16 +59,21 @@ void CControlUI::SetPos(const CDuiRect& rc)
 	if(m_rcItem.right < m_rcItem.left) m_rcItem.right  = m_rcItem.left;
 	if(m_rcItem.bottom< m_rcItem.top)  m_rcItem.bottom = m_rcItem.top;
 
+	SIZE tmpsz = {m_rcItem.GetWidth(), m_rcItem.GetHeight()};
+	SetPostSize(tmpsz);
+
+	if(!IsWindow(m_hWnd) || m_rcItem.IsNull()) 
+		return;
+
 	CDuiRect rct = m_rcItem;
+	rct = m_rcItem;
 
 	rct.left   += m_rcInset.left;
 	rct.top    += m_rcInset.top;
 	rct.right  -= m_rcInset.right;
 	rct.bottom -= m_rcInset.bottom;
 
-	//assert(IsWindow(m_hWnd));
-	if(!IsWindow(m_hWnd)) return;
-	::SetWindowPos(m_hWnd, 0, rct.left, rct.top, rct.right-rct.left, rct.bottom-rct.top, SWP_NOZORDER);
+	::SetWindowPos(m_hWnd, 0, rct.left, rct.top, rct.GetWidth(), rct.GetHeight(), SWP_NOZORDER);
 }
 
 int CControlUI::GetWidth() const
@@ -167,6 +193,11 @@ void CControlUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
 		rcInset.bottom = _tcstol(pstr + 1, &pstr, 10);
 		SetInset(rcInset);
 	}
+	else if(_tcscmp(pstrName, _T("visible")) == 0){
+		bool bVisible = _tcscmp(pstrValue, _T("true"))==0;
+		SetVisible(bVisible, bVisible);
+	}
+	else if(_tcscmp(pstrName, _T("display")) == 0) SetDisplayed(_tcscmp(pstrValue, _T("true"))==0);
 	else{
 #ifdef _DEBUG
 		MessageBox(NULL, pstrValue, pstrName, MB_ICONEXCLAMATION);

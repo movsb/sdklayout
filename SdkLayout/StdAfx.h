@@ -15,15 +15,7 @@
 #include <olectl.h>
 #include <tchar.h>
 #include <cassert>
-
-#include "Utils.h"
-#include "UIControl.h"
-#include "UIContainer.h"
-#include "UIManager.h"
-#include "UIMarkup.h"
-#include "UIDlgBuilder.h"
-#include "UIVerticalLayout.h"
-#include "UIHorizontalLayout.h"
+#include <cstdio>
 
 #include "SdkLayout.h"
 

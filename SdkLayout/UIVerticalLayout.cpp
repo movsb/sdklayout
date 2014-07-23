@@ -5,9 +5,7 @@ namespace SdkLayout
 {
 	void CVerticalLayoutUI::SetPos(const CDuiRect& rc)
 	{
-		m_rcItem = rc;
-		if(m_rcItem.right < m_rcItem.left) m_rcItem.right  = m_rcItem.left;
-		if(m_rcItem.bottom< m_rcItem.top)  m_rcItem.bottom = m_rcItem.top;
+		CControlUI::SetPos(rc);
 
 		if( m_items.IsEmpty() ) return;
 
@@ -81,5 +79,9 @@ namespace SdkLayout
 			cyNeeded += sz.cy ;
 			szRemaining.cy -= sz.cy;
 		}
+		
+		SIZE sztmp = {m_rcItem.GetWidth(), cyNeeded};
+		sztmp.cy += m_rcInset.top + m_rcInset.bottom;
+		SetPostSize(sztmp);
 	}
 }
