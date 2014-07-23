@@ -124,10 +124,34 @@ public:
 private:
 	int GetID(const char* key)
 	{
+		static struct{
+			int id;
+			const char* key;
+		}pre_defined[] = 
+		{
+			{1,		"IDOK"			},
+			{2,		"IDCANCEL"		},
+			{3,		"IDABORT"		},
+			{4,		"IDRETRY"		},
+			{5,		"IDIGNORE"		},
+			{6,		"IDYES"			},
+			{7,		"IDNO"			},
+			{8,		"IDCLOSE"		},
+			{9,		"IDHELP"		},
+			{10,	"IDTRYAGAIN"	},
+			{11,	"IDCONTINUE"	},
+			{-1,	NULL			},
+		};
 		if(m_ids.count(key))
 			return m_ids[key];
-		else
+		else{
+			for(int i=0; pre_defined[i].key!=NULL; i++){
+				if(strcmp(key, pre_defined[i].key) == 0){
+					return pre_defined[i].id;
+				}
+			}
 			return -1;
+		}
 	}
 
 	void SetElement(tinyxml2::XMLElement* pElem)
@@ -139,6 +163,9 @@ private:
 					int i = GetID(a->Value());
 					if(i != -1)
 						pElem->SetAttribute("id",GetID(a->Value()));
+					else{
+						std::cout << "Î´Ê¶±ðµÄID: " << a->Value() << std::endl;
+					}
 				}
 			}while(a = a->Next());
 		}
