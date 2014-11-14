@@ -1,3 +1,5 @@
+(此项目目前被合并到movsb/common/sources/sdklayout, 此处的代码已很久不再更新)
+
 sdklayout
 =========
 
